@@ -18,6 +18,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "^2.5.0",
 		"@types/node": "^25.9.3",
+		"@types/yargs-parser": "^21.0.3",
 		"tsdown": "^0.22.3"
 	},
 	"peerDependencies": {
@@ -25,7 +26,7 @@
 	},
 	"dependencies": {
 		"ai": "^6.0.207",
-		"mcmd": "0.1.0",
+		"mcmd": "0.1.1",
 		"sarvam-ai-sdk": "^0.3.1",
 		"zod": "^3.25.67"
 	},

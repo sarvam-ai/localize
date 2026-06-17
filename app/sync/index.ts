@@ -18,7 +18,7 @@ export default Command<typeof options>(
 		const fromData = await readJson(fromFilePath);
 
 		const toFilePath = `./${dist}/${to}.${mode}`;
-		const toData = await readJson(toFilePath);
+		const toData = await readJson(toFilePath, false);
 
 		for (const [key, value] of fromData) {
 			if (incremental && toData.has(key)) continue;

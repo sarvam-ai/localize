@@ -7,7 +7,7 @@ export const translate = async (text: string, from: string, to: string) => {
 			from,
 			to,
 			numerals_format: "international",
-			mode: "modern-colloquial",
+			mode: "formal",
 		}),
 		prompt: text,
 	});

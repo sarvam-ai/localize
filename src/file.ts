@@ -3,15 +3,16 @@ import { Console } from "mcmd";
 import { flattenJson, unflattenJson } from "@/json";
 import { tryAsync, trys } from "./utils";
 
-export const readJson = async (filePath: string) => {
-	const [error1, content] = await tryAsync(readFile(filePath, "utf-8"));
-	if (error1) {
-		Console.error(`Error read file at ${filePath}:`, error1);
+export const readJson = async (filePath: string, showError = true) => {
+	const [err, content] = await tryAsync(readFile(filePath, "utf-8"));
+	if (showError && err) {
+		Console.error(`Error read file at ${filePath}:`, err);
 		return new Map<string, string>();
 	}
 
 	const { error, data } = trys(() => JSON.parse(content ?? "{}"));
-	if (error) Console.error(`Error parsing file at ${filePath}:`, error);
+	if (showError && error)
+		Console.error(`Error parsing file at ${filePath}:`, error);
 
 	return flattenJson((data ?? {}) as object);
 };

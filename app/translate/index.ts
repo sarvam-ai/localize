@@ -8,17 +8,24 @@ export const options = syncOptions
 		to: true,
 	})
 	.extend({
-		to: z.array(SarvamLanguageCodeSchema),
+		to: z.array(SarvamLanguageCodeSchema).optional(),
+		all: z.boolean().optional(),
 	});
 
 export default Command<typeof options>(
-	async ({ from, to, dist, mode, incremental }) => {
+	async ({ from, to, dist, mode, incremental, all }) => {
 		const fromFilePath = `./${dist}/${from}.${mode}`;
 		const fromData = await readJson(fromFilePath);
+		const languages =
+			(to ?? all) ? Object.keys(SarvamLanguageCodeSchema.enum) : [];
 
-		for (const lang of to) {
+		if (!languages.length) {
+			Console.error("No target languages specified. Use --to or --all flag.");
+		}
+
+		for (const lang of languages) {
 			const toFilePath = `./${dist}/${lang}.${mode}`;
-			const toData = await readJson(toFilePath);
+			const toData = await readJson(toFilePath, false);
 
 			for (const [key, value] of fromData) {
 				if (incremental && toData.has(key)) continue;
