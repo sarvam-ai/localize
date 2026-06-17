@@ -1,0 +1,42 @@
+{
+	"name": "sarvam-localize",
+	"description": "Website localization with Sarvam AI Translate",
+	"version": "0.0.1",
+	"type": "module",
+	"exports": "./dist/cli.mjs",
+	"bin": "./dist/cli.mjs",
+	"files": [
+		"dist/**/*"
+	],
+	"scripts": {
+		"transpile": "mcmd transpile",
+		"cli": "bun run ./.mcmd/cli.ts",
+		"build": "mcmd build",
+		"test": "bun run ./dist/cli.mjs",
+		"check": "tsc"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.0",
+		"@types/node": "^25.9.3",
+		"tsdown": "^0.22.3"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"ai": "^6.0.207",
+		"mcmd": "0.1.0",
+		"sarvam-ai-sdk": "^0.3.1",
+		"zod": "^3.25.67"
+	},
+	"repository": {
+		"directory": "/",
+		"url": "https://github.com/sarvam-ai/sarvam-localize",
+		"type": "git"
+	},
+	"keywords": [
+		"mcmd",
+		"cli",
+		"zod"
+	]
+}
