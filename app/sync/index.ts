@@ -1,6 +1,5 @@
 import { SarvamLanguageCodeSchema } from "@/config";
 import { readJson, writeJson } from "@/file";
-import { flattenJson, unflattenJson } from "@/json";
 import { translate } from "@/translate";
 
 export const options = z.object({
@@ -14,10 +13,10 @@ export default Command<typeof options>(async ({ from, to, dist, mode }) => {
 	Console.log(`Translations from ${from} to ${to}...`);
 
 	const fromFilePath = `./${dist}/${from}.${mode}`;
-	const fromData = flattenJson(await readJson(fromFilePath));
+	const fromData = await readJson(fromFilePath);
 
 	const toFilePath = `./${dist}/${to}.${mode}`;
-	const toData = flattenJson(await readJson(toFilePath));
+	const toData = await readJson(toFilePath);
 
 	for (const [key, value] of fromData) {
 		if (toData.has(key)) continue;
@@ -26,7 +25,7 @@ export default Command<typeof options>(async ({ from, to, dist, mode }) => {
 		toData.set(key, newValue);
 	}
 
-	await writeJson(toFilePath, unflattenJson(toData));
+	await writeJson(toFilePath, toData);
 
 	Console.log(`Translation Done`);
 });
