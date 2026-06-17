@@ -6,6 +6,8 @@ export const translate = async (text: string, from: string, to: string) => {
 		model: sarvam.translation("mayura:v1", {
 			from,
 			to,
+			numerals_format: "international",
+			mode: "modern-colloquial",
 		}),
 		prompt: text,
 	});

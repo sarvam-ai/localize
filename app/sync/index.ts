@@ -7,25 +7,28 @@ export const options = z.object({
 	to: SarvamLanguageCodeSchema,
 	dist: z.string().default("locales"),
 	mode: z.enum(["json"]).default("json"),
+	incremental: z.boolean().default(true),
 });
 
-export default Command<typeof options>(async ({ from, to, dist, mode }) => {
-	Console.log(`Translations from ${from} to ${to}...`);
+export default Command<typeof options>(
+	async ({ from, to, dist, mode, incremental }) => {
+		Console.log(`Translations from ${from} to ${to}...`);
 
-	const fromFilePath = `./${dist}/${from}.${mode}`;
-	const fromData = await readJson(fromFilePath);
+		const fromFilePath = `./${dist}/${from}.${mode}`;
+		const fromData = await readJson(fromFilePath);
 
-	const toFilePath = `./${dist}/${to}.${mode}`;
-	const toData = await readJson(toFilePath);
+		const toFilePath = `./${dist}/${to}.${mode}`;
+		const toData = await readJson(toFilePath);
 
-	for (const [key, value] of fromData) {
-		if (toData.has(key)) continue;
+		for (const [key, value] of fromData) {
+			if (incremental && toData.has(key)) continue;
 
-		const newValue = await translate(value, from, to);
-		toData.set(key, newValue);
-	}
+			const newValue = await translate(value, from, to);
+			toData.set(key, newValue);
+		}
 
-	await writeJson(toFilePath, toData);
+		await writeJson(toFilePath, toData);
 
-	Console.log(`Translation Done`);
-});
+		Console.log(`Translation Done`);
+	},
+);

@@ -11,21 +11,23 @@ export const options = syncOptions
 		to: z.array(SarvamLanguageCodeSchema),
 	});
 
-export default Command<typeof options>(async ({ from, to, dist, mode }) => {
-	const fromFilePath = `./${dist}/${from}.${mode}`;
-	const fromData = await readJson(fromFilePath);
+export default Command<typeof options>(
+	async ({ from, to, dist, mode, incremental }) => {
+		const fromFilePath = `./${dist}/${from}.${mode}`;
+		const fromData = await readJson(fromFilePath);
 
-	for (const lang of to) {
-		const toFilePath = `./${dist}/${lang}.${mode}`;
-		const toData = await readJson(toFilePath);
+		for (const lang of to) {
+			const toFilePath = `./${dist}/${lang}.${mode}`;
+			const toData = await readJson(toFilePath);
 
-		for (const [key, value] of fromData) {
-			if (toData.has(key)) continue;
+			for (const [key, value] of fromData) {
+				if (incremental && toData.has(key)) continue;
 
-			const newValue = await translate(value, from, lang);
-			toData.set(key, newValue);
+				const newValue = await translate(value, from, lang);
+				toData.set(key, newValue);
+			}
+			await writeJson(toFilePath, toData);
+			Console.log(`Done:`, toFilePath);
 		}
-		await writeJson(toFilePath, toData);
-		Console.log(`Done:`, toFilePath);
-	}
-});
+	},
+);
