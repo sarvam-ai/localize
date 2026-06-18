@@ -14,3 +14,15 @@ export const translate = async (text: string, from: string, to: string) => {
 
 	return result.text;
 };
+
+export const defaultEnglistJson = () =>
+	JSON.stringify(
+		{
+			welcome: "Welcome to India",
+			greeting: "Hello, how are you?",
+			farewell: "Goodbye, see you soon!",
+			thank_you: "Thank you for your support!",
+		},
+		null,
+		4,
+	);

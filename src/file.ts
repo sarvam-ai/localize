@@ -17,11 +17,35 @@ export const readJson = async (filePath: string, showError = true) => {
 	return flattenJson((data ?? {}) as object);
 };
 
+export const readJsonRaw = async <T extends object = Record<string, unknown>>(
+	filePath: string,
+	showError = true,
+): Promise<T> => {
+	const [err, content] = await tryAsync(readFile(filePath, "utf-8"));
+	if (showError && err) {
+		Console.error(`Error read file at ${filePath}:`, err);
+		return {} as T;
+	}
+
+	const { error, data } = trys(() => JSON.parse(content ?? "{}"));
+	if (showError && error)
+		Console.error(`Error parsing file at ${filePath}:`, error);
+
+	return (data ?? {}) as T;
+};
+
 export const writeJson = async (
 	filePath: string,
 	data: Map<string, string>,
 ) => {
 	const content = JSON.stringify(unflattenJson(data), null, 4);
+	const [error] = await tryAsync(writeFile(filePath, content));
+
+	if (error) Console.error(`Error writing file at ${filePath}:`, error);
+};
+
+export const writeJsonRaw = async (filePath: string, data: object) => {
+	const content = JSON.stringify(data, null, 4);
 	const [error] = await tryAsync(writeFile(filePath, content));
 
 	if (error) Console.error(`Error writing file at ${filePath}:`, error);
