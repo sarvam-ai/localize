@@ -1,27 +1,49 @@
-import { SarvamLanguageCodeSchema } from "@/config";
+import { extensionZod, SarvamLanguageCodeSchema } from "@/config";
 import { readJson, writeJson } from "@/file";
 import { translate } from "@/translate";
 
+const filePathZod = z.string().transform((path, ctx) => {
+	const fileName = path.split("/").pop();
+
+	if (!fileName) {
+		ctx.addIssue({
+			code: "custom",
+			message: "Invalid file path",
+		});
+		return z.NEVER;
+	}
+
+	const [language, extension] = fileName.split(".");
+
+	return {
+		src: path,
+		language: SarvamLanguageCodeSchema.parse(language),
+		extension: extensionZod.parse(extension),
+	};
+});
+
 export const options = z.object({
-	from: SarvamLanguageCodeSchema.default("en-IN"),
-	to: SarvamLanguageCodeSchema,
-	dist: z.string().default("locales"),
-	mode: z.enum(["json"]).default("json"),
-	incremental: z.boolean().default(true),
+	source: filePathZod,
+	target: filePathZod,
+	retranslate: z.boolean().default(false),
 });
 
 export default Command<typeof options>(
-	async ({ from, to, dist, mode, incremental }) => {
-		Console.log(`Translations from ${from} to ${to}...`);
+	async ({ source, target, retranslate }) => {
+		Console.log(
+			`Translations from ${source.language} to ${target.language}...`,
+		);
 
-		const fromFilePath = `./${dist}/${from}.${mode}`;
+		const from = source.language;
+		const fromFilePath = source.src;
 		const fromData = await readJson(fromFilePath);
 
-		const toFilePath = `./${dist}/${to}.${mode}`;
+		const to = target.language;
+		const toFilePath = target.src;
 		const toData = await readJson(toFilePath, false);
 
 		for (const [key, value] of fromData) {
-			if (incremental && toData.has(key)) continue;
+			if (!retranslate && toData.has(key)) continue;
 
 			const newValue = await translate(value, from, to);
 			toData.set(key, newValue);

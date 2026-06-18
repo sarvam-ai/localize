@@ -38,3 +38,5 @@ export type MoreSarvamLanguageCode = z.infer<
 >;
 
 export type SarvamLanguageCode = z.infer<typeof SarvamLanguageCodeSchema>;
+
+export const extensionZod = z.enum(["json"]);
