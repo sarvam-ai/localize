@@ -33,7 +33,7 @@
 	},
 	"repository": {
 		"directory": "/",
-		"url": "https://github.com/sarvam-ai/sarvam-localize",
+		"url": "https://github.com/sarvam-ai/localize",
 		"type": "git"
 	},
 	"keywords": [
