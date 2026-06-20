@@ -18,10 +18,15 @@ export const translate = async (
 			? "sarvam-translate:v1"
 			: (suggestedModel ?? "mayura:v1");
 
+	from = from === "en" ? "en-IN" : from;
+	to = to === "en" ? "en-IN" : to;
+
+	if (from === to) return text;
+
 	const result = await generateText({
 		model: sarvam.translation(model, {
-			from: from === "en" ? "en-IN" : from,
-			to: to === "en" ? "en-IN" : to,
+			from,
+			to,
 			numerals_format: "international",
 			mode: "formal",
 			...options,

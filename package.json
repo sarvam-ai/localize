@@ -1,7 +1,7 @@
 {
 	"name": "sarvam-localize",
 	"description": "Website localization with Sarvam AI Translate",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"type": "module",
 	"exports": "./dist/cli.mjs",
 	"bin": "./dist/cli.mjs",
