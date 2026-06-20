@@ -1,4 +1,4 @@
-import { extensionZod, SarvamLanguageCodeSchema } from "@/config";
+import { extensionZod, LanguageCodeSchema } from "@/config";
 import { readJson, writeJson } from "@/file";
 import { translate } from "@/translate";
 
@@ -17,7 +17,7 @@ const filePathZod = z.string().transform((path, ctx) => {
 
 	return {
 		src: path,
-		language: SarvamLanguageCodeSchema.parse(language),
+		language: LanguageCodeSchema.parse(language),
 		extension: extensionZod.parse(extension),
 	};
 });

@@ -4,7 +4,7 @@ import { z } from "zod";
  * Specifies the language in BCP-47 format.
  */
 
-export const languages = {
+export const baseLanguageDist = {
 	"hi-IN": "Hindi",
 	"bn-IN": "Bengali",
 	"kn-IN": "Kannada",
@@ -18,7 +18,7 @@ export const languages = {
 	"gu-IN": "Gujarati",
 } as const;
 
-export const moreLanguages = {
+export const extraLanguageDist = {
 	"as-IN": "Assamese",
 	"ur-IN": "Urdu",
 	"ne-IN": "Nepali",
@@ -33,39 +33,19 @@ export const moreLanguages = {
 	"doi-IN": "Dogri",
 } as const;
 
-export const SarvamLanguageCodeSchema = z.enum([
-	"hi-IN", // Hindi
-	"bn-IN", // Bengali
-	"kn-IN", // Kannada
-	"ml-IN", // Malayalam
-	"mr-IN", // Marathi
-	"od-IN", // Odia
-	"pa-IN", // Punjabi
-	"ta-IN", // Tamil
-	"te-IN", // Telugu
-	"en-IN", // English (India)
-	"gu-IN", // Gujarati
-]);
+export const baseLanguageCode = Object.keys(baseLanguageDist);
+export const BaseLanguageCodeSchema = z.enum(["en", ...baseLanguageCode]);
 
-export const MoreSarvamLanguageCodeSchema = z.enum([
-	"as-IN", // Assamese
-	"ur-IN", // Urdu
-	"ne-IN", // Nepali
-	"kok-IN", // Konkani
-	"ks-IN", // Kashmiri
-	"sd-IN", // Sindhi
-	"sa-IN", // Sanskrit
-	"sat-IN", // Santali
-	"mni-IN", // Manipuri
-	"brx-IN", // Bodo
-	"mai-IN", // Maithili
-	"doi-IN", // Dogri
-]);
+export const extraLanguageCode = Object.keys(extraLanguageDist);
+export const ExtraLanguageCodeSchema = z.enum(["en", ...extraLanguageCode]);
 
-export type MoreSarvamLanguageCode = z.infer<
-	typeof MoreSarvamLanguageCodeSchema
->;
+export const languageDist = {
+	...baseLanguageDist,
+	...extraLanguageDist,
+} as const;
+export const languageCode = Object.keys(languageDist);
+export const LanguageCodeSchema = z.enum(["en", ...languageCode]);
 
-export type SarvamLanguageCode = z.infer<typeof SarvamLanguageCodeSchema>;
+export const modelZod = z.enum(["mayura:v1", "sarvam-translate:v1"]);
 
 export const extensionZod = z.enum(["json"]);

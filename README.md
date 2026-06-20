@@ -6,7 +6,7 @@
 
 Website localization CLI powered by Sarvam AI translation.
 
-`sarvam-localize` helps you translate JSON locale files across Indian languages while preserving nested key structure.
+`sarvam-localize` helps you translate JSON locale files across Indian languages while preserving nested key structure and variables.
 
 ## Requirements
 
@@ -77,18 +77,20 @@ Both file names must include a supported language code and `.json` extension.
 
 eg: Input (`en-IN.json`)
 
-Nested JSON is supported.
+Variables and Nested JSON is supported.
 
-```json
+```jsonc
 {
+    "title": "Welcome to India",
     "home": {
-        "title": "Welcome to India",
-        "cta": "Get started"
+        "greeting": "Hello {{variable}}, how are you?", // React i18next
+        "farewell": "Goodbye {variable}, see you soon!", // Vue i18n, React Intl
+        "thank_you": "Thank you %{variable}, for your support!", // Ruby i18n
+        "cta": "Click here to learn more about {$variable}" // Fluent
     }
 }
 ```
 
-The CLI flattens keys internally (`home.title`, `home.cta`) and writes them back as nested JSON in target files.
 
 ### Supported language codes by `mayura:v1`
 

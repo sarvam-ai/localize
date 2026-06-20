@@ -1,13 +1,30 @@
 import { generateText } from "ai";
 import { sarvam } from "sarvam-ai-sdk";
+import { extraLanguageCode } from "./config";
 
-export const translate = async (text: string, from: string, to: string) => {
+export const translate = async (
+	text: string,
+	from: string,
+	to: string,
+	suggestedModel?: Parameters<typeof sarvam.translation>[0],
+	options?: Pick<
+		Parameters<typeof sarvam.translation>[1],
+		"numerals_format" | "output_script" | "mode" | "speaker_gender"
+	>,
+) => {
+	const model =
+		(extraLanguageCode as string[]).includes(from) ||
+		(extraLanguageCode as string[]).includes(to)
+			? "sarvam-translate:v1"
+			: (suggestedModel ?? "mayura:v1");
+
 	const result = await generateText({
-		model: sarvam.translation("mayura:v1", {
-			from,
-			to,
+		model: sarvam.translation(model, {
+			from: from === "en" ? "en-IN" : from,
+			to: to === "en" ? "en-IN" : to,
 			numerals_format: "international",
 			mode: "formal",
+			...options,
 		}),
 		prompt: text,
 	});

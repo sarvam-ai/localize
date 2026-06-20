@@ -1,7 +1,7 @@
 {
 	"name": "sarvam-localize",
 	"description": "Website localization with Sarvam AI Translate",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"type": "module",
 	"exports": "./dist/cli.mjs",
 	"bin": "./dist/cli.mjs",
@@ -13,7 +13,7 @@
 		"cli": "bun run ./.mcmd/cli.ts",
 		"build": "mcmd build",
 		"test": "bun run ./dist/cli.mjs",
-		"check": "tsc"
+		"check": "tsc --noEmit"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.5.0",
@@ -34,8 +34,13 @@
 		"type": "git"
 	},
 	"keywords": [
-		"mcmd",
-		"cli",
-		"zod"
+		"sarvam",
+		"localize",
+		"website",
+		"translate",
+		"india",
+		"bharat",
+		"localization",
+		"l10n"
 	]
 }

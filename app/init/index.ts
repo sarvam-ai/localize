@@ -1,5 +1,5 @@
 import { getCMD } from "@/cmd";
-import { languages, SarvamLanguageCodeSchema } from "@/config";
+import { LanguageCodeSchema, languageDist, modelZod } from "@/config";
 import { assertEnv } from "@/env";
 import {
 	createDirectory,
@@ -45,11 +45,10 @@ export default Command(async () => {
 				title: file,
 				value: file,
 			})),
-			initial: 1,
 		});
 
 		const name = (languageRes.value ?? "").split(".")[0];
-		const code = SarvamLanguageCodeSchema.safeParse(name);
+		const code = LanguageCodeSchema.safeParse(name);
 		source = code.success ? code.data : null;
 	}
 
@@ -58,15 +57,14 @@ export default Command(async () => {
 			type: "select",
 			name: "value",
 			message: "Pick a language you know",
-			choices: Object.entries(languages).map(([code, name]) => ({
+			choices: Object.entries(languageDist).map(([code, name]) => ({
 				title: name,
 				value: code,
 			})),
 			min: 1,
-			initial: 1,
 		});
 
-		const code = SarvamLanguageCodeSchema.safeParse(languageRes.value);
+		const code = LanguageCodeSchema.safeParse(languageRes.value);
 		if (!code.success) {
 			Console.error("Select or create atleast one source file");
 			process.exit(1);
@@ -84,7 +82,7 @@ export default Command(async () => {
 		name: "value",
 		message: "Pick all the target languages you want",
 		choices: [
-			...Object.entries(languages).map(([code, name]) => ({
+			...Object.entries(languageDist).map(([code, name]) => ({
 				title: name,
 				value: code,
 			})),
@@ -97,12 +95,33 @@ export default Command(async () => {
 		hint: "- Space to select. Return to submit",
 	});
 
-	console.log(languagesRes);
+	const modelRes = await Console.prompts({
+		type: "select",
+		name: "value",
+		message: "Pick a Sarvam Translation Model",
+		choices: [
+			{
+				title: modelZod.enum["mayura:v1"],
+				value: modelZod.enum["mayura:v1"],
+			},
+			{
+				title: modelZod.enum["sarvam-translate:v1"],
+				value: modelZod.enum["sarvam-translate:v1"],
+			},
+			{
+				title: "Automatically pick the best",
+				value: "auto",
+			},
+		],
+	});
+
+	const model = modelRes.value === "auto" ? undefined : modelRes.value;
 
 	if ((languagesRes.value as string[]).includes("all")) {
 		Console.green("You're ready to run the following command");
 		Console.log(
 			getCMD({
+				model,
 				from: source,
 				all: true,
 			}),
@@ -110,9 +129,7 @@ export default Command(async () => {
 		process.exit(0);
 	}
 
-	const target = z
-		.array(SarvamLanguageCodeSchema)
-		.safeParse(languagesRes.value);
+	const target = z.array(LanguageCodeSchema).safeParse(languagesRes.value);
 	if (!target.success) {
 		Console.error("Select atleast one target language");
 		process.exit(1);
@@ -121,6 +138,7 @@ export default Command(async () => {
 	Console.green("You're ready to run the following command");
 	Console.log(
 		getCMD({
+			model,
 			from: source,
 			to: target.data,
 		}),

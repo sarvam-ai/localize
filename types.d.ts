@@ -5,3 +5,5 @@ declare global {
 		entries<T>(obj: T): Array<[keyof T, T[keyof T]]>;
 	}
 }
+
+export {};
