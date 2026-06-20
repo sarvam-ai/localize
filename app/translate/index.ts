@@ -15,8 +15,11 @@ export default Command<typeof options>(
 	async ({ from, to, dist, extension, retranslate, all }) => {
 		const fromFilePath = `./${dist}/${from}.${extension}`;
 		const fromData = await readJson(fromFilePath);
-		const languages =
-			(to ?? all) ? Object.keys(SarvamLanguageCodeSchema.enum) : [];
+		const languages = to?.length
+			? to
+			: all
+				? Object.keys(SarvamLanguageCodeSchema.enum)
+				: [];
 
 		if (!languages.length) {
 			Console.error("No target languages specified. Use --to or --all flag.");
