@@ -1,37 +1,14 @@
 import { getCMD, runCMD } from "@/cmd";
 import { LanguageCodeSchema, languageDist, modelZod } from "@/config";
 import { assertEnv } from "@/env";
-import {
-	createDirectory,
-	createFileInFolder,
-	listFilesInFolder,
-	listFoldersInCurrentDirectory,
-} from "@/folder";
+import { createFileInFolder, listFilesInFolder } from "@/folder";
+import { selectFolderInLoop } from "@/select-folder";
 import { defaultEnglistJson } from "@/translate";
 
 export default Command(async () => {
 	assertEnv();
 
-	const ls = await listFoldersInCurrentDirectory();
-
-	const folderRes = await Console.prompts({
-		type: "select",
-		name: "value",
-		message: "Pick your locales folder",
-		warn: "If you don't I'll create on called `locales`",
-		choices: [
-			...ls.map((folder) => ({ title: folder, value: folder })),
-			{
-				title: "Create a new folder called `locales`",
-				value: "create",
-			},
-		],
-	});
-
-	const dist: string =
-		folderRes.value === "create"
-			? await createDirectory(`locales`)
-			: folderRes.value;
+	const dist = await selectFolderInLoop();
 
 	const files = await listFilesInFolder(dist);
 	let source = null;

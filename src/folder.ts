@@ -1,14 +1,18 @@
 import { mkdir, readdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
-export const listFoldersInCurrentDirectory = async () => {
+export const listFoldersInFolder = async (folderPath = ".") => {
 	const currentDirectory = process.cwd();
-	const entries = await readdir(currentDirectory, { withFileTypes: true });
+	const targetPath = resolve(currentDirectory, folderPath);
+	const entries = await readdir(targetPath, { withFileTypes: true });
 
 	return entries
 		.filter((entry) => entry.isDirectory())
 		.map((entry) => entry.name);
 };
+
+export const listFoldersInCurrentDirectory = async () =>
+	listFoldersInFolder(".");
 
 export const createDirectory = async (directoryPath: string) => {
 	const currentDirectory = process.cwd();
