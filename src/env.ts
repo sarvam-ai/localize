@@ -2,7 +2,9 @@ import { config } from "dotenv";
 import { Console } from "mcmd";
 
 export function assertEnv(): void {
-	config();
+	config({
+		quiet: true,
+	});
 
 	const value = process.env.SARVAM_API_KEY;
 

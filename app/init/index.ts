@@ -1,4 +1,4 @@
-import { getCMD } from "@/cmd";
+import { getCMD, runCMD } from "@/cmd";
 import { LanguageCodeSchema, languageDist, modelZod } from "@/config";
 import { assertEnv } from "@/env";
 import {
@@ -116,32 +116,50 @@ export default Command(async () => {
 	});
 
 	const model = modelRes.value === "auto" ? undefined : modelRes.value;
+	const selectedLanguages = languagesRes.value as string[];
 
-	if ((languagesRes.value as string[]).includes("all")) {
-		Console.green("You're ready to run the following command");
-		Console.log(
-			getCMD({
-				model,
-				from: source,
-				all: true,
-			}),
-		);
-		process.exit(0);
-	}
+	let cmd: string;
 
-	const target = z.array(LanguageCodeSchema).safeParse(languagesRes.value);
-	if (!target.success) {
-		Console.error("Select atleast one target language");
-		process.exit(1);
-	}
+	if (selectedLanguages.includes("all")) {
+		cmd = getCMD({
+			model,
+			from: source,
+			all: true,
+		});
+	} else {
+		const target = z.array(LanguageCodeSchema).safeParse(selectedLanguages);
+		if (!target.success) {
+			Console.error("Select atleast one target language");
+			process.exit(1);
+		}
 
-	Console.green("You're ready to run the following command");
-	Console.log(
-		getCMD({
+		cmd = getCMD({
 			model,
 			from: source,
 			to: target.data,
-		}),
-	);
+		});
+	}
+
+	Console.green("You're ready to run the following command");
+	Console.log(cmd);
+
+	const runRes = await Console.prompts({
+		type: "confirm",
+		name: "value",
+		message: "Run this command now?",
+		initial: true,
+	});
+
+	if (!runRes.value) {
+		Console.blue("Skipped. You can run the command above any time.");
+		process.exit(0);
+	}
+
+	const code = await runCMD(cmd);
+	if (code !== 0) {
+		Console.error(`Command failed with exit code ${code}`);
+		process.exit(code);
+	}
+
 	process.exit(0);
 });
