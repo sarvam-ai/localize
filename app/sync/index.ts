@@ -1,5 +1,4 @@
 import { extensionZod, LanguageCodeSchema } from "@/config";
-import { assertEnv } from "@/env";
 import { readJson, writeJson } from "@/file";
 import { translate } from "@/translate";
 
@@ -31,8 +30,6 @@ export const options = z.object({
 
 export default Command<typeof options>(
 	async ({ source, target, retranslate }) => {
-		assertEnv();
-
 		Console.log(
 			`Translations from ${source.language} to ${target.language}...`,
 		);

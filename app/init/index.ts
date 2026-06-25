@@ -1,13 +1,10 @@
 import { getCMD, runCMD } from "@/cmd";
 import { LanguageCodeSchema, languageDist, modelZod } from "@/config";
-import { assertEnv } from "@/env";
 import { createFileInFolder, listFilesInFolder } from "@/folder";
 import { selectFolderInLoop } from "@/select-folder";
 import { defaultEnglistJson } from "@/translate";
 
 export default Command(async () => {
-	assertEnv();
-
 	const dist = await selectFolderInLoop();
 
 	const files = await listFilesInFolder(dist);

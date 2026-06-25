@@ -26,6 +26,20 @@ Run without installing:
 npx sarvam-localize
 ```
 
+## Config File
+
+Create a file named `localize.json` to skip `init` commands.
+
+```jsonc
+{
+	"translate": {
+		"model": "sarvam-translate:v1",
+		"dist": "locales",
+		"from": "en-IN"
+	}
+}
+```
+
 ## Commands
 
 ###  `init`
@@ -137,5 +151,5 @@ locales/
 
 - If a target key already exists, it is skipped by default.
 - Use `--retranslate` to force updates.
-
-##
+- Default config file name is `localize.json`.
+- Pass `--config ./custom.json` while running to override the default.

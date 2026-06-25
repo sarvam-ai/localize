@@ -4,7 +4,6 @@ import {
 	languageCode,
 	modelZod,
 } from "@/config";
-import { assertEnv } from "@/env";
 import { readJson, writeJson } from "@/file";
 import { translate } from "@/translate";
 
@@ -20,14 +19,13 @@ export const options = z.object({
 
 export default Command<typeof options>(
 	async ({ from, to, dist, extension, retranslate, all, model }) => {
-		assertEnv();
-		
 		const fromFilePath = `./${dist}/${from}.${extension}`;
 		const fromData = await readJson(fromFilePath);
 		const toLang = to?.length ? to : all ? languageCode : [];
 
 		if (!toLang.length) {
 			Console.error("No target languages specified. Use --to or --all flag.");
+			process.exit(1);
 		}
 
 		for (const lang of toLang) {
