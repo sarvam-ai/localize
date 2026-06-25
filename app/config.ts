@@ -1,3 +1,4 @@
+import { mergeObjects } from "mcmd/engine";
 import { assertEnv } from "@/env";
 import { readJsonRaw } from "@/file";
 
@@ -38,13 +39,17 @@ export default defineConfig({
 			assertEnv();
 		},
 		extra: async (cmd, data) => {
-			const configPath = (data as { config: string }).config ?? "localize.json";
-			const config = await readJsonRaw<ConfigFile>(configPath, false);
+			const config = (data as { config: string }).config ?? "localize.json";
+			const defaultPath = config === "localize.json";
+
+			const configContent = await readJsonRaw<ConfigFile>(config, false);
 			const mainCmd = cmd[0];
 
 			switch (mainCmd) {
+				case "init":
+					return mergeObjects({ config, defaultPath }, configContent);
 				case "translate":
-					return config.translate ?? {};
+					return mergeObjects({ config, defaultPath }, configContent.translate);
 				default:
 					return {};
 			}

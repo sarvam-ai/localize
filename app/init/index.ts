@@ -1,10 +1,33 @@
-import { getCMD, runCMD } from "@/cmd";
+import { getCMD } from "@/cmd";
 import { LanguageCodeSchema, languageDist, modelZod } from "@/config";
+import { writeJsonRaw } from "@/file";
 import { createFileInFolder, listFilesInFolder } from "@/folder";
+import { askAndRunCommand } from "@/prompts";
 import { selectFolderInLoop } from "@/select-folder";
 import { defaultEnglistJson } from "@/translate";
 
-export default Command(async () => {
+export const options = z
+	.object({
+		config: z.string(),
+		override: z.boolean().optional(),
+	})
+	.passthrough();
+
+export default Command<typeof options>(async (data) => {
+	const configPath = data.config;
+	const translateCmd = getCMD(
+		"translate",
+		data.defaultPath ? undefined : `--config ${configPath}`,
+	);
+
+	const hasTranslate =
+		typeof data.translate === "object" && data.translate !== null;
+
+	if (hasTranslate && !data.override) {
+		Console.blue(`Config already loaded from ${configPath}. Skipping init.`);
+		Console.blue(`Pass --override to update the config file.`);
+	}
+
 	const dist = await selectFolderInLoop();
 
 	const files = await listFilesInFolder(dist);
@@ -89,16 +112,23 @@ export default Command(async () => {
 		],
 	});
 
-	const model = modelRes.value === "auto" ? undefined : modelRes.value;
+	const model =
+		modelRes.value === "auto" ? modelZod.enum["mayura:v1"] : modelRes.value;
 	const selectedLanguages = languagesRes.value as string[];
 
-	let cmd: string;
+	const baseConfig = {
+		model,
+		dist,
+		from: source,
+		extension: "json" as const,
+	};
 
 	if (selectedLanguages.includes("all")) {
-		cmd = getCMD({
-			model,
-			from: source,
-			all: true,
+		await writeJsonRaw(configPath, {
+			translate: {
+				...baseConfig,
+				all: true,
+			},
 		});
 	} else {
 		const target = z.array(LanguageCodeSchema).safeParse(selectedLanguages);
@@ -107,33 +137,14 @@ export default Command(async () => {
 			process.exit(1);
 		}
 
-		cmd = getCMD({
-			model,
-			from: source,
-			to: target.data,
+		await writeJsonRaw(configPath, {
+			translate: {
+				...baseConfig,
+				to: target.data,
+			},
 		});
 	}
 
-	Console.green("You're ready to run the following command");
-	Console.log(cmd);
-
-	const runRes = await Console.prompts({
-		type: "confirm",
-		name: "value",
-		message: "Run this command now?",
-		initial: true,
-	});
-
-	if (!runRes.value) {
-		Console.blue("Skipped. You can run the command above any time.");
-		process.exit(0);
-	}
-
-	const code = await runCMD(cmd);
-	if (code !== 0) {
-		Console.error(`Command failed with exit code ${code}`);
-		process.exit(code);
-	}
-
-	process.exit(0);
+	Console.green(`Saved translate config to ${configPath}`);
+	await askAndRunCommand(translateCmd);
 });

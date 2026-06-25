@@ -28,14 +28,17 @@ npx sarvam-localize
 
 ## Config File
 
-Create a file named `localize.json` to skip `init` commands.
+Run `init` to creates or updates a config file (default: `localize.json`).
 
 ```jsonc
 {
 	"translate": {
-		"model": "sarvam-translate:v1",
+		"model": "mayura:v1",
 		"dist": "locales",
-		"from": "en-IN"
+		"from": "en-IN",
+		"extension": "json",
+		"to": ["ml-IN", "ta-IN"]
+		// or use: "all": true
 	}
 }
 ```
@@ -46,15 +49,19 @@ Create a file named `localize.json` to skip `init` commands.
 
 Interactive setup for your localization workflow.
 
+It prepares your `translate` config and then asks if you want to run
+`translate` right away.
+
 ```bash
 npx sarvam-localize init
 ```
 
-### `sarvam-localize translate`
+### `translate`
 
 Batch translates a source locale file into target locale files.
 
 ```bash
+npx sarvam-localize translate
 npx sarvam-localize translate --from en-IN --to hi-IN ta-IN ml-IN
 npx sarvam-localize translate --from en-IN --all
 npx sarvam-localize translate --from en-IN --all --retranslate
@@ -152,4 +159,5 @@ locales/
 - If a target key already exists, it is skipped by default.
 - Use `--retranslate` to force updates.
 - Default config file name is `localize.json`.
-- Pass `--config ./custom.json` while running to override the default.
+- Pass `--config ./custom.json` to use a custom config file.
+- If config already exists, `init --override` can update the config.

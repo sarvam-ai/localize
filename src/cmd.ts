@@ -1,10 +1,5 @@
 import { spawn } from "node:child_process";
 
-export type TranslateCmdProps = {
-	from: string;
-	model?: string;
-} & ({ to: string[] } | { all: true });
-
 const getRuntime = () => {
 	const userAgent = (process.env.npm_config_user_agent ?? "").toLowerCase();
 	const execPath = (process.env.npm_execpath ?? "").toLowerCase();
@@ -51,12 +46,10 @@ const getPackageRunner = (pkg: string) => {
 	}
 };
 
-export const getCMD = (props: TranslateCmdProps) => {
-	const model = props.model ? `--model ${props.model}` : "";
-	const target = "all" in props ? "--all" : `--to ${props.to.join(" ")}`;
+export const getCMD = (...commands: (string | undefined)[]) => {
 	const runner = getPackageRunner("sarvam-localize");
 
-	return `${runner} translate ${model} ${target} --from ${props.from}`.trim();
+	return `${runner} ${commands.filter(Boolean).join(" ")}`.trim();
 };
 
 export const runCMD = (cmd: string) =>
