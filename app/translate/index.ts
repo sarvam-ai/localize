@@ -2,7 +2,7 @@ import {
 	extensionZod,
 	LanguageCodeSchema,
 	languageCode,
-	modelZod,
+	translationModelZod,
 } from "@/config";
 import { readJson, writeJson } from "@/file";
 import { translate } from "@/translate";
@@ -14,7 +14,7 @@ export const options = z.object({
 	all: z.boolean().optional(),
 	retranslate: z.boolean().default(false),
 	extension: extensionZod.default("json"),
-	model: modelZod.default("mayura:v1"),
+	model: translationModelZod.default("mayura:v1"),
 });
 
 export default Command<typeof options>(

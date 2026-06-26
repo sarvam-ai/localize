@@ -1,5 +1,9 @@
 import { getCMD } from "@/cmd";
-import { LanguageCodeSchema, languageDist, modelZod } from "@/config";
+import {
+	LanguageCodeSchema,
+	languageDist,
+	translationModelZod,
+} from "@/config";
 import { writeJsonRaw } from "@/file";
 import { createFileInFolder, listFilesInFolder } from "@/folder";
 import { askAndRunCommand } from "@/prompts";
@@ -98,12 +102,12 @@ export default Command<typeof options>(async (data) => {
 		message: "Pick a Sarvam Translation Model",
 		choices: [
 			{
-				title: modelZod.enum["mayura:v1"],
-				value: modelZod.enum["mayura:v1"],
+				title: translationModelZod.enum["mayura:v1"],
+				value: translationModelZod.enum["mayura:v1"],
 			},
 			{
-				title: modelZod.enum["sarvam-translate:v1"],
-				value: modelZod.enum["sarvam-translate:v1"],
+				title: translationModelZod.enum["sarvam-translate:v1"],
+				value: translationModelZod.enum["sarvam-translate:v1"],
 			},
 			{
 				title: "Automatically pick the best",
@@ -113,7 +117,9 @@ export default Command<typeof options>(async (data) => {
 	});
 
 	const model =
-		modelRes.value === "auto" ? modelZod.enum["mayura:v1"] : modelRes.value;
+		modelRes.value === "auto"
+			? translationModelZod.enum["mayura:v1"]
+			: modelRes.value;
 	const selectedLanguages = languagesRes.value as string[];
 
 	const baseConfig = {

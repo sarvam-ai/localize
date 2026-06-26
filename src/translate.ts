@@ -37,6 +37,22 @@ export const translate = async (
 	return result.text;
 };
 
+export const translateWithLLM = async (
+	text: string,
+	to: string,
+	suggestedModel?: Parameters<typeof sarvam.languageModel>[0],
+) => {
+	to = to === "en" ? "en-IN" : to;
+
+	const result = await generateText({
+		model: sarvam.languageModel(suggestedModel ?? "sarvam-105b"),
+		system: `Translate this markdown file to ${to}`,
+		prompt: text,
+	});
+
+	return result.text;
+};
+
 export const defaultEnglistJson = () =>
 	JSON.stringify(
 		{

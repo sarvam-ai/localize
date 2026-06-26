@@ -50,6 +50,8 @@ export default defineConfig({
 					return mergeObjects({ config, defaultPath }, configContent);
 				case "translate":
 					return mergeObjects({ config, defaultPath }, configContent.translate);
+				case "markdown":
+					return mergeObjects({ config, defaultPath }, configContent.markdown);
 				default:
 					return {};
 			}

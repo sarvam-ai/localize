@@ -46,6 +46,8 @@ export const languageDist = {
 export const languageCode = Object.keys(languageDist);
 export const LanguageCodeSchema = z.enum(["en", ...languageCode]);
 
-export const modelZod = z.enum(["mayura:v1", "sarvam-translate:v1"]);
+export const translationModelZod = z.enum(["mayura:v1", "sarvam-translate:v1"]);
+export const languageModelZod = z.enum(["sarvam-30b", "sarvam-105b"]);
 
 export const extensionZod = z.enum(["json"]);
+export const markdownZod = z.enum(["mdx", "md"]);

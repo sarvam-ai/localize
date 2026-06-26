@@ -1,5 +1,5 @@
 import { mkdir, readdir, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { extname, resolve } from "node:path";
 
 export const listFoldersInFolder = async (folderPath = ".") => {
 	const currentDirectory = process.cwd();
@@ -30,6 +30,50 @@ export const listFilesInFolder = async (folderPath: string, type = "json") => {
 		.filter((entry) => entry.isFile())
 		.map((entry) => entry.name)
 		.filter((fileName) => fileName.endsWith(`.${type}`));
+};
+
+export const scanFiles = async (
+	sourceFolderPath: string,
+	checkFunction: (name: string, extension: string) => boolean,
+) => {
+	const currentDirectory = process.cwd();
+	const sourcePath = resolve(currentDirectory, sourceFolderPath);
+
+	const nestedEntries = await readdir(sourcePath, { withFileTypes: true });
+	const nestedFolders = nestedEntries.filter((entry) => entry.isDirectory());
+
+	const results = await Promise.all(
+		nestedFolders.map(async (folder) => {
+			const nestedFolderPath = resolve(sourcePath, folder.name);
+			const entries = await readdir(nestedFolderPath, { withFileTypes: true });
+
+			const files = entries
+				.filter((entry) => entry.isFile())
+				.map((entry) => entry.name)
+				.filter((fileName) => {
+					const extension = extname(fileName);
+					const nameWithoutExtension = extension
+						? fileName.slice(0, -extension.length)
+						: fileName;
+
+					return checkFunction(nameWithoutExtension, extension);
+				})
+				.map((fileName) => ({
+					name: fileName,
+					path: `${sourceFolderPath}/${folder.name}/${fileName}`.replaceAll(
+						"\\",
+						"/",
+					),
+				}));
+
+			return {
+				folder: folder.name,
+				files,
+			};
+		}),
+	);
+
+	return results;
 };
 
 export const createFileInFolder = async (
