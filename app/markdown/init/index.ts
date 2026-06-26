@@ -1,6 +1,6 @@
 import { getCMD } from "@/cmd";
 import { LanguageCodeSchema, languageDist, languageModelZod } from "@/config";
-import { writeJsonRaw } from "@/file";
+import { updateConfig } from "@/configuration";
 import { askAndRunCommand } from "@/prompts";
 import { selectFolderInLoop } from "@/select-folder";
 import { fileTypeZod } from "../index";
@@ -91,38 +91,28 @@ export default Command<typeof options>(async (data) => {
 		],
 	});
 
-	const model = modelRes.value === "auto" ? undefined : modelRes.value;
-
 	const selectedLanguages = languagesRes.value as string[];
-	const baseConfig = {
-		model,
-		source,
-		destination,
-		fileType,
-		redo: false,
-	};
+	const extraConfig: { all?: boolean; to?: string[] } = {};
 
-	if (selectedLanguages.includes("all")) {
-		await writeJsonRaw(configPath, {
-			markdown: {
-				...baseConfig,
-				all: true,
-			},
-		});
-	} else {
+	if (selectedLanguages.includes("all")) extraConfig.all = true;
+	else {
 		const target = z.array(LanguageCodeSchema).safeParse(selectedLanguages);
 		if (!target.success) {
 			Console.error("Select atleast one target language");
 			process.exit(1);
 		}
 
-		await writeJsonRaw(configPath, {
-			markdown: {
-				...baseConfig,
-				to: target.data,
-			},
-		});
+		extraConfig.to = target.data;
 	}
+
+	await updateConfig(configPath, "markdown", {
+		model: modelRes.value === "auto" ? undefined : modelRes.value,
+		source,
+		destination,
+		from: source,
+		fileType,
+		...(extraConfig as Required<typeof extraConfig>),
+	});
 
 	Console.green(`Saved markdown config to ${configPath}`);
 	await askAndRunCommand(markdownCmd);

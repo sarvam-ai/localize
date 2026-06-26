@@ -34,7 +34,7 @@ export const listFilesInFolder = async (folderPath: string, type = "json") => {
 
 export const scanFiles = async (
 	sourceFolderPath: string,
-	checkFunction: (name: string, extension: string) => boolean,
+	checkFunction: (name: string, extension?: string) => boolean,
 ) => {
 	const currentDirectory = process.cwd();
 	const sourcePath = resolve(currentDirectory, sourceFolderPath);
@@ -51,12 +51,9 @@ export const scanFiles = async (
 				.filter((entry) => entry.isFile())
 				.map((entry) => entry.name)
 				.filter((fileName) => {
-					const extension = extname(fileName);
-					const nameWithoutExtension = extension
-						? fileName.slice(0, -extension.length)
-						: fileName;
+					const [name, ext] = fileName.split(".");
 
-					return checkFunction(nameWithoutExtension, extension);
+					return checkFunction(name ?? fileName, ext);
 				})
 				.map((fileName) => ({
 					name: fileName,
