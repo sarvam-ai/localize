@@ -1,5 +1,11 @@
 import { getCMD } from "@/cmd";
-import { LanguageCodeSchema, languageDist, languageModelZod } from "@/config";
+import {
+	extensionZod,
+	LanguageCodeSchema,
+	languageDist,
+	languageModelZod,
+	markdownZod,
+} from "@/config";
 import { updateConfig } from "@/configuration";
 import { askAndRunCommand } from "@/prompts";
 import { selectFolderInLoop } from "@/select-folder";
@@ -28,13 +34,8 @@ export default Command<typeof options>(async (data) => {
 		return;
 	}
 
-	Console.log("Pick source directory (the folder to scan for markdown files)");
-	const source = await selectFolderInLoop();
-
-	Console.log(
-		"Pick destination directory (where translated markdown will be written)",
-	);
-	const destination = await selectFolderInLoop();
+	const source = await selectFolderInLoop("source");
+	const destination = await selectFolderInLoop("destination");
 
 	const fileTypeRes = await Console.prompts({
 		type: "text",
@@ -43,14 +44,32 @@ export default Command<typeof options>(async (data) => {
 		initial: "page.mdx",
 	});
 
-	const fileType = (fileTypeRes.value ?? "page.mdx").trim();
+	const fileType = fileTypeZod(markdownZod)
+		.default("page.mdx")
+		.safeParse(fileTypeRes.value);
 
-	const parsedFileType = fileTypeZod.safeParse(fileType);
-	if (!parsedFileType.success) {
+	if (!fileType.success) {
 		Console.error(
 			"File type must be in the format <name>.<md|mdx> (e.g. page.mdx)",
 		);
 		process.exit(1);
+	}
+
+	const dataFileRes = await Console.prompts({
+		type: "text",
+		name: "value",
+		message: "Enter, If you want a summary json file",
+		initial: "localize.json",
+	});
+
+	const dataFile = fileTypeZod(extensionZod)
+		.optional()
+		.safeParse(dataFileRes.value);
+
+	if (!dataFile.success) {
+		Console.warn(
+			"File type must be in the format <name>.<json> (e.g. page.mdx)",
+		);
 	}
 
 	const languagesRes = await Console.prompts({
@@ -109,8 +128,8 @@ export default Command<typeof options>(async (data) => {
 		model: modelRes.value === "auto" ? undefined : modelRes.value,
 		source,
 		destination,
-		from: source,
-		fileType,
+		fileType: fileType.data.fileName,
+		dataFile: dataFile.data?.fileName,
 		...(extraConfig as Required<typeof extraConfig>),
 	});
 

@@ -1,6 +1,6 @@
 import { generateText } from "ai";
 import { sarvam } from "sarvam-ai-sdk";
-import { extraLanguageCode } from "./config";
+import { extraLanguageCode, languageDist } from "./config";
 
 export const translate = async (
 	text: string,
@@ -43,12 +43,24 @@ export const translateWithLLM = async (
 	suggestedModel?: Parameters<typeof sarvam.languageModel>[0],
 ) => {
 	to = to === "en" ? "en-IN" : to;
+	const language = languageDist[to as "en-IN"];
 
 	const result = await generateText({
 		model: sarvam.languageModel(suggestedModel ?? "sarvam-105b"),
-		system: `Translate this markdown file to ${to}`,
+		system: [
+			`Translate this markdown file to ${language ?? to} (${to})`,
+			`- Don't write anything else, just do the translation.`,
+			`- Don't alter any markdown format or html or javascript or react components.`,
+			`- Don't alter any programming codeblocks or inline codes.`,
+			`- Only translate the text contents, but make sure it perserve the same meaning.`,
+			`- Use international numerals format. Don't use native numbers.`,
+			`- If translation of a word does't exist, just use the original word without altering.`,
+			`- Don't wrap the translation inside "\`\`\`"`,
+		].join("/n"),
 		prompt: text,
 	});
+
+	console.log(result.text);
 
 	return result.text;
 };

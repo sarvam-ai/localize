@@ -1,22 +1,28 @@
+import type { infer as Infer, ZodTypeAny } from "zod";
 import {
+	extensionZod,
 	LanguageCodeSchema,
 	languageCode,
 	languageModelZod,
 	markdownZod,
 } from "@/config";
+import { updateConfig } from "@/configuration";
 import { DataJsonBuilder } from "@/data";
 import { readMd, writeMd } from "@/file";
 import { scanFiles } from "@/folder";
 import { translateWithLLM } from "@/translate";
 
-export const fileTypeZod = z.string().transform((fileName) => {
-	const [name, extension] = fileName.trim().split(".");
+export const fileTypeZod = <T extends ZodTypeAny>(sz: T) =>
+	z.string().transform((fileNameRaw) => {
+		const fileName = fileNameRaw.trim();
+		const [name, extension] = fileName.split(".");
 
-	return {
-		name: name,
-		ext: markdownZod.parse(extension),
-	};
-});
+		return {
+			fileName,
+			name,
+			ext: sz.parse(extension) as Infer<T>,
+		};
+	});
 
 export const options = z.object({
 	source: z.string(),
@@ -24,12 +30,13 @@ export const options = z.object({
 	to: z.array(LanguageCodeSchema).optional(),
 	all: z.boolean().optional(),
 	redo: z.boolean().default(false),
-	fileType: fileTypeZod.default("page.mdx"),
+	fileType: fileTypeZod(markdownZod).default("page.mdx"),
+	dataFile: fileTypeZod(extensionZod).optional(),
 	model: languageModelZod.default("sarvam-105b"),
 });
 
 export default Command<typeof options>(
-	async ({ source, to, destination, fileType, redo, all, model }) => {
+	async ({ source, to, destination, fileType, redo, all, model, dataFile }) => {
 		const scanResult = await scanFiles(source, (name, ext) => {
 			if (ext !== fileType.ext) return false;
 			if (name !== fileType.name) return false;
@@ -72,6 +79,11 @@ export default Command<typeof options>(
 			}
 		}
 
-		Console.log(dataJson.getData());
+		if (dataFile?.name)
+			await updateConfig<{ translated: ReturnType<typeof dataJson.getData> }>(
+				`${destination}/${dataFile.name}.${dataFile.ext}`,
+				"translated",
+				dataJson.getData(),
+			);
 	},
 );

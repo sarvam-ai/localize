@@ -22,7 +22,7 @@ export type ConfigFile = {
 		source: string;
 		destination: string;
 		fileType: string;
-		from: string;
+		dataFile?: string;
 	} & (
 		| {
 				to: string[];
@@ -72,14 +72,15 @@ export const writeConfig = async (
 };
 
 export const updateConfig = async <
-	K extends keyof ConfigFile,
-	V extends ConfigFile[K],
+	C extends Record<string, object> = ConfigFile,
+	K extends keyof C = keyof C,
+	V extends C[K] = C[K],
 >(
 	filePath: string,
 	section: K,
 	value: V,
 ) => {
-	const existing = await readConfig(filePath, true);
+	const existing = await readConfig<C>(filePath, true);
 	await writeConfig(filePath, {
 		...(existing ?? {}),
 		[section]: value,

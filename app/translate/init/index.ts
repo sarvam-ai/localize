@@ -81,7 +81,7 @@ export default Command<typeof options>(async (data) => {
 	const languagesRes = await Console.prompts({
 		type: "multiselect",
 		name: "value",
-		message: "Pick all the target languages you want",
+		message: "Pick every target languages you want",
 		choices: [
 			{
 				title: "All of the below",

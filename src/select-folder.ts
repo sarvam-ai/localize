@@ -1,8 +1,8 @@
-import { dirname, join } from "node:path";
+import { posix as path } from "node:path";
 import { Console } from "mcmd";
 import { createDirectory, listFoldersInFolder } from "@/folder";
 
-export const selectFolderInLoop = async () => {
+export const selectFolderInLoop = async (prompt = "locales") => {
 	let currentFolder = ".";
 
 	while (true) {
@@ -12,7 +12,7 @@ export const selectFolderInLoop = async () => {
 		const folderRes = await Console.prompts({
 			type: "select",
 			name: "value",
-			message: "Pick your locales folder",
+			message: `Pick your ${prompt} folder`,
 			warn: `Current folder: ${currentLabel}`,
 			choices: [
 				{
@@ -45,20 +45,22 @@ export const selectFolderInLoop = async () => {
 		}
 
 		if (action === "up") {
-			currentFolder = dirname(currentFolder);
+			currentFolder = path.dirname(currentFolder);
 			continue;
 		}
 
 		if (action === "create") {
 			const targetFolder =
-				currentFolder === "." ? "locales" : join(currentFolder, "locales");
+				currentFolder === "." ? "locales" : path.join(currentFolder, "locales");
 			return createDirectory(targetFolder);
 		}
 
 		if (action.startsWith("open:")) {
 			const folderName = action.replace("open:", "");
 			currentFolder =
-				currentFolder === "." ? folderName : join(currentFolder, folderName);
+				currentFolder === "."
+					? folderName
+					: path.join(currentFolder, folderName);
 		}
 	}
 };

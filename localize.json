@@ -1,11 +1,17 @@
 {
-    "translate": {
-        "model": "sarvam-translate:v1",
-        "dist": "locales",
-        "from": "en-IN",
-        "extension": "json",
-        "to": [
-            "ml-IN"
-        ]
-    }
+	"translate": {
+		"model": "sarvam-translate:v1",
+		"dist": "locales",
+		"from": "en-IN",
+		"extension": "json",
+		"to": ["ml-IN"]
+	},
+	"markdown": {
+		"model": "sarvam-105b",
+		"source": "demo/src/app/docs",
+		"destination": "demo/src/docs",
+		"fileType": "page.mdx",
+		"dataFile": "localize.json",
+		"to": ["ml-IN", "ta-IN"]
+	}
 }
