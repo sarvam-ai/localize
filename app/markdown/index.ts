@@ -1,16 +1,16 @@
-import type { infer as Infer } from "zod";
 import {
 	LanguageCodeSchema,
 	languageCode,
 	languageModelZod,
 	markdownZod,
 } from "@/config";
+import { DataJsonBuilder } from "@/data";
 import { readMd, writeMd } from "@/file";
 import { scanFiles } from "@/folder";
 import { translateWithLLM } from "@/translate";
 
-const fileTypeZod = z.string().transform((fileName, ctx) => {
-	const [name, extension] = fileName.split(".");
+export const fileTypeZod = z.string().transform((fileName) => {
+	const [name, extension] = fileName.trim().split(".");
 
 	return {
 		name: name,
@@ -28,13 +28,6 @@ export const options = z.object({
 	model: languageModelZod.default("sarvam-105b"),
 });
 
-type DataJson = {
-	[source: string]: {
-		id: string;
-		languages: Infer<typeof options.shape.to>;
-	}[];
-};
-
 export default Command<typeof options>(
 	async ({ source, to, destination, fileType, redo, all, model }) => {
 		const scanResult = await scanFiles(source, (name, ext) => {
@@ -50,9 +43,7 @@ export default Command<typeof options>(
 			process.exit(1);
 		}
 
-		const dataJson: DataJson = {
-			[source]: [],
-		};
+		const dataJson = new DataJsonBuilder();
 
 		for (const scan of scanResult) {
 			const id = scan.folder;
@@ -67,8 +58,6 @@ export default Command<typeof options>(
 				continue;
 			}
 
-			dataJson[source]?.push({ id, languages: [] });
-
 			for (const lang of toLang) {
 				const toFilePath = `./${destination}/${id}/${lang}.${fileType.ext}`;
 				const toContent = await readMd(toFilePath, false);
@@ -78,8 +67,11 @@ export default Command<typeof options>(
 				const newContent = await translateWithLLM(fromContent, lang, model);
 
 				await writeMd(toFilePath, newContent);
+				dataJson.populateSource(id, lang);
 				Console.log(`Done:`, toFilePath);
 			}
 		}
+
+		Console.log(dataJson.getData());
 	},
 );

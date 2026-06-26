@@ -1,6 +1,11 @@
 {
-	"translate": {
-		"dist": "locales",
-		"from": "en-IN"
-	}
+    "translate": {
+        "model": "sarvam-translate:v1",
+        "dist": "locales",
+        "from": "en-IN",
+        "extension": "json",
+        "to": [
+            "ml-IN"
+        ]
+    }
 }
