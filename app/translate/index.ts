@@ -12,13 +12,13 @@ export const options = z.object({
 	from: LanguageCodeSchema.default("en"),
 	to: z.array(LanguageCodeSchema).optional(),
 	all: z.boolean().optional(),
-	retranslate: z.boolean().default(false),
+	redo: z.boolean().default(false),
 	extension: extensionZod.default("json"),
 	model: translationModelZod.default("mayura:v1"),
 });
 
 export default Command<typeof options>(
-	async ({ from, to, dist, extension, retranslate, all, model }) => {
+	async ({ from, to, dist, extension, redo, all, model }) => {
 		const fromFilePath = `./${dist}/${from}.${extension}`;
 		const fromData = await readJson(fromFilePath);
 		const toLang = to?.length ? to : all ? languageCode : [];
@@ -33,7 +33,7 @@ export default Command<typeof options>(
 			const toData = await readJson(toFilePath, false);
 
 			for (const [key, value] of fromData) {
-				if (!retranslate && toData.has(key)) continue;
+				if (!redo && toData.has(key)) continue;
 
 				const newValue = await translate(value, from, lang, model);
 				toData.set(key, newValue);
