@@ -1,0 +1,90 @@
+name: Generate locales on command
+
+on:
+    issue_comment:
+        types: [created]
+
+permissions:
+    contents: write
+    pull-requests: write
+
+concurrency:
+    group: locale-${{ github.event.issue.number }}
+    cancel-in-progress: true
+
+jobs:
+    generate:
+        if: >
+            github.event.issue.pull_request &&
+            contains(github.event.comment.body, '/localize') &&
+            github.event.comment.user.login != 'github-actions[bot]' &&
+            (
+                github.event.comment.author_association == 'OWNER' ||
+                github.event.comment.author_association == 'MEMBER' ||
+                github.event.comment.author_association == 'COLLABORATOR'
+            )
+        runs-on: ubuntu-latest
+        steps:
+            - name: Get PR branch info
+              id: pr
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const { data: pr } = await github.rest.pulls.get({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        pull_number: context.issue.number
+                      });
+                      core.setOutput('head_ref', pr.head.ref);
+                      core.setOutput('head_repo', pr.head.repo.full_name);
+
+            - name: Checkout PR branch
+              if: steps.pr.outputs.head_repo == github.repository
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ steps.pr.outputs.head_ref }}
+                  fetch-depth: 0
+
+            - name: Setup Node
+              if: steps.pr.outputs.head_repo == github.repository
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: npm
+
+            - name: Install dependencies
+              if: steps.pr.outputs.head_repo == github.repository
+              run: npm ci
+
+            - name: Generate translations
+              if: steps.pr.outputs.head_repo == github.repository
+              env:
+                  # make sure to add your secret key in github action settings
+                  SARVAM_API_KEY: ${{ secrets.SARVAM_API_KEY }}
+              run: |
+                  npx sarvam-localize translate
+
+            - name: Commit and push
+              if: steps.pr.outputs.head_repo == github.repository
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git add locales
+                  if git diff --cached --quiet; then
+                    echo "No changes"
+                    exit 0
+                  fi
+                  git commit -m "chore: generate locale files [skip ci]"
+                  git push
+
+            - name: Comment on fork PR
+              if: steps.pr.outputs.head_repo != github.repository
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      await github.rest.issues.createComment({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                        body: 'This PR is from a fork, so the bot cannot push changes directly. A maintainer needs to run localization or open a bot PR.'
+                      });

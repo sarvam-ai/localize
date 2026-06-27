@@ -1,0 +1,60 @@
+name: Generate locales
+
+on:
+    pull_request:
+        types: [opened, synchronize, reopened]
+        paths:
+            # specify the default input file
+            - locales/en-IN.json
+            # specify the config file for sarvam-localize
+            - localize.json
+
+permissions:
+    contents: write
+
+concurrency:
+    group: locale-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
+
+jobs:
+    generate:
+        runs-on: ubuntu-latest
+
+        if: >
+            github.event.pull_request.head.repo.full_name == github.repository &&
+            github.actor != 'github-actions[bot]'
+
+        steps:
+            - name: Checkout PR branch
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.head_ref }}
+                  fetch-depth: 0
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Generate translations
+              env:
+                  # make sure to add your secret key in github action settings
+                  SARVAM_API_KEY: ${{ secrets.SARVAM_API_KEY }}
+              run: |
+                  npx sarvam-localize translate
+
+            - name: Commit generated files
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git add locales
+                  if git diff --cached --quiet; then
+                    echo "No changes to commit"
+                    exit 0
+                  fi
+                  git commit -m "chore: generate locale files"
+                  git push
